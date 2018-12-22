@@ -1,0 +1,71 @@
+global-settings:
+
+   # Waiting time in seconds.
+   waiting-time: 10
+
+   # Enable a waiting room.
+   waiting-room: false
+   
+   # Player can send messages while waiting to respawn. 
+   player-chat: true
+
+   # Player die if they quit the server while waiting to respawn.
+   anti-disconnection: true
+
+   # If enable, players can't move their views while waiting to respawn.   
+   hardcore-hold: false
+
+messages-settings:
+
+   chat-message:
+   
+      # If waiting messages are in chat.
+      enable: false
+      
+      # Add space before and after messages.
+      space: true
+
+   # If waiting messages are in bar message.
+   bar-message: true
+   
+   # If waiting messages are in title message.
+   title-message: false
+   
+   # Message showed after waiting
+   after-messages:
+      enable: true
+      
+      chat-message:
+      
+         # If after message are in chat.
+         enable: true
+         
+         # Add space before and after messages.
+         space: true
+
+      # If after message are in bar message.
+      bar-message: false
+      
+      # If after message are in title message.
+      title-message: false
+
+sounds-settings:
+   
+   # Enable or disable waiting time sound.
+   enable: false
+   
+   # Bukkit name of the sound. Be carefull this name change between minecraft's versions.
+   # 1.7 sounds name : http://docs.codelanx.com/Bukkit/1.7.10/
+   # 1.8 sounds name : http://docs.codelanx.com/Bukkit/1.8/org/bukkit/Sound.html
+   # 1.9 sounds name : ?
+   # 1.10 sounds name : ?
+   # 1.11 sounds name : ?
+   # 1.12 sounds name : ?
+   # last version sounds name : https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
+   # If you found some sound list tell me in PM !
+   name: BLOCK_STONE_BUTTON_CLICK_ON
+
+waiting-room:
+
+    # Player can move in waiting room.
+    player-moves: false

@@ -1,0 +1,27 @@
+main: cn.plixe.waitbeforerespawn.Main
+name: WaitBeforeRespawn
+author: Plixe
+api-version: 1.13
+version: 1.0
+
+permissions:
+   wbr.admin:
+      default: false
+      description: All permissions.
+      children:
+         - wbr.bypass
+         - wbr.help
+         - wbr.reload
+   wbr.bypass:
+      default: false
+      description: Bypass waiting time.
+   wbr.help:
+      default: op
+      description: Allow to show help message.
+   wbr.reload:
+      default: op
+      description: Allow to reload configurations files.
+      
+commands:
+   wbr:
+      description: Plugin's main command.

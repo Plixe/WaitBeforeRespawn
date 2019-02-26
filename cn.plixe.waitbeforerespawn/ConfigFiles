@@ -10,14 +10,15 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class ConfigFiles {
 
-	public static File settingsFile, msgFile, wRoomFile;
-	public static FileConfiguration settingsConf, msgConf, wRoomConf;
+	public static File settingsFile, msgFile, wRoomFile, wSavesFile;
+	public static FileConfiguration settingsConf, msgConf, wRoomConf, wSavesConf;
 
 	public static void createFiles() {
 
 		settingsFile = new File(Main.instance.getDataFolder(), "settings.yml");
 		msgFile = new File(Main.instance.getDataFolder(), "messages.yml");
 		wRoomFile = new File(Main.instance.getDataFolder(), "waiting-room.yml");
+		wSavesFile = new File(Main.instance.getDataFolder(), "waiting-saves.yml");
 
 		if (!settingsFile.exists()) {
 
@@ -40,6 +41,13 @@ public class ConfigFiles {
 
 		}
 
+		if (!wSavesFile.exists()) {
+
+			wSavesFile.getParentFile().mkdirs();
+			Main.instance.saveResource("waiting-saves.yml", false);
+
+		}
+
 		try {
 
 			settingsConf = new YamlConfiguration();
@@ -50,6 +58,9 @@ public class ConfigFiles {
 
 			wRoomConf = new YamlConfiguration();
 			wRoomConf.load(wRoomFile);
+
+			wSavesConf = new YamlConfiguration();
+			wSavesConf.load(wSavesFile);
 
 		} catch (InvalidConfigurationException | IOException e) {
 
@@ -100,6 +111,20 @@ public class ConfigFiles {
 
 	}
 
+	public static void saveWaitingSavesFile() {
+
+		try {
+
+			wSavesConf.save(wSavesFile);
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+
+	}
+
 	public static void reloadFiles(CommandSender sender) {
 
 		try {
@@ -135,6 +160,18 @@ public class ConfigFiles {
 
 			e.printStackTrace();
 			sender.sendMessage(Utils.coloredString("&cwaiting-room.yml can't be reloaded. See logs."));
+
+		}
+
+		try {
+
+			wSavesConf.load(wSavesFile);
+			sender.sendMessage(Utils.coloredString("&awaiting-saves.yml correctly reloaded"));
+
+		} catch (InvalidConfigurationException | IOException e) {
+
+			e.printStackTrace();
+			sender.sendMessage(Utils.coloredString("&cwaiting-saves.yml can't be reloaded. See logs."));
 
 		}
 

@@ -6,7 +6,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -19,11 +18,11 @@ import cn.plixe.waitbeforerespawn.waiting.WaitingAPI;
 
 public class WaitingRespawnEvent implements Listener {
 
-	private void sendAfterNotifications(Player player) {
+	static void sendAfterNotifications(Player player) {
 
-		if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-messages.chat-message.enable")) {
+		if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.chat-message.enable")) {
 
-			if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-messages.chat-message.space")) {
+			if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.chat-message.space")) {
 
 				player.sendMessage("");
 				Utils.sendColoredMessage(player, ConfigFiles.msgConf.getString("waiting-messages.after"));
@@ -37,13 +36,13 @@ public class WaitingRespawnEvent implements Listener {
 
 		}
 
-		if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-messages.bar-message")) {
+		if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.bar-message")) {
 
 			Utils.sendActionBar(player, ConfigFiles.msgConf.getString("waiting-messages.after"));
 
 		}
 
-		if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-messages.title-message")) {
+		if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.title-message")) {
 
 			Utils.sendTitle(player, "", ConfigFiles.msgConf.getString("waiting-messages.after"));
 
@@ -51,7 +50,7 @@ public class WaitingRespawnEvent implements Listener {
 
 	}
 
-	private void sendWaitingNotifications(Player player, int counter) {
+	static void sendWaitingNotifications(Player player, int counter) {
 
 		if (ConfigFiles.settingsConf.getBoolean("messages-settings.chat-message.enable")) {
 
@@ -111,6 +110,13 @@ public class WaitingRespawnEvent implements Listener {
 
 			WaitingAPI.playersWaitingList.add(player);
 
+			if (ConfigFiles.settingsConf.getBoolean("waiting-room.enable") && (!WaitingAPI.waitingRoomDefined())) {
+
+				Utils.sendColoredMessage(Bukkit.getConsoleSender(),
+						"&cYou need to define waiting-room location ! Use /wbr setroom");
+
+			}
+
 			/* WAITER */
 
 			BukkitTask countdownTask = new BukkitRunnable() {
@@ -121,57 +127,83 @@ public class WaitingRespawnEvent implements Listener {
 				@Override
 				public void run() {
 
-					if (ConfigFiles.settingsConf.getBoolean("global-settings.waiting-room")) {
+					if (player.isOnline()) {
 
-						if (oneTime == 1) {
+						if (ConfigFiles.settingsConf.getBoolean("waiting-room.enable")) {
 
-							WaitingAPI.teleportToWaitingRoom(player);
-							oneTime--;
+							if (WaitingAPI.waitingRoomDefined()) {
 
-						}
+								if (oneTime == 1) {
 
-					}
+									WaitingAPI.teleportToWaitingRoom(player);
+									oneTime--;
 
-					if (counter < 0) {
+								}
 
-						if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-messages.enable")) {
-
-							sendAfterNotifications(player);
+							}
 
 						}
 
-						player.teleport(e.getRespawnLocation());
-						cancel();
+						if (counter < 0) {
+
+							if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.enable")) {
+
+								sendAfterNotifications(player);
+
+							}
+
+							player.teleport(e.getRespawnLocation());
+
+							if (player.isOnline()) {
+
+								WaitingAPI.playersWaitingList.remove(player);
+
+								ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player), null);
+								ConfigFiles.saveWaitingSavesFile();
+
+								for (PotionEffect effect : player.getActivePotionEffects()) {
+
+									player.removePotionEffect(effect.getType());
+
+								}
+
+							}
+
+							cancel();
+
+						} else {
+
+							sendWaitingNotifications(player, counter);
+
+							counter--;
+
+						}
 
 					} else {
 
-						sendWaitingNotifications(player, counter);
+						ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player) + ".respawn-location.world",
+								e.getRespawnLocation().getWorld().getName());
+						ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player) + ".respawn-location.x",
+								e.getRespawnLocation().getX());
+						ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player) + ".respawn-location.y",
+								e.getRespawnLocation().getY());
+						ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player) + ".respawn-location.z",
+								e.getRespawnLocation().getZ());
+						ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player) + ".respawn-location.yaw",
+								e.getRespawnLocation().getYaw());
+						ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player) + ".respawn-location.pitch",
+								e.getRespawnLocation().getPitch());
+						ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player) + ".remaining-time",
+								counter);
+						ConfigFiles.saveWaitingSavesFile();
 
-						counter--;
+						cancel();
 
 					}
 
 				}
 
 			}.runTaskTimer(Main.instance, 20, 20);
-
-			/* WAITER REMOVER */
-
-			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Main.instance, new Runnable() {
-
-				public void run() {
-
-					WaitingAPI.playersWaitingList.remove(player);
-
-					for (PotionEffect effect : player.getActivePotionEffects()) {
-
-						player.removePotionEffect(effect.getType());
-
-					}
-
-				}
-
-			}, (waitingTime + 1) * 20);
 
 		}
 

@@ -17,13 +17,12 @@ public class WaitingQuitEvent implements Listener {
 
 		Player player = e.getPlayer();
 
-		if (ConfigFiles.settingsConf.getBoolean("global-settings.anti-disconnection")) {
+		if (WaitingAPI.playersWaitingList.contains(player)) {
 
-			if (WaitingAPI.playersWaitingList.contains(player)) {
+			Utils.sendColoredMessage(Bukkit.getConsoleSender(),
+					ConfigFiles.msgConf.getString("anti-unlogin-message").replace("<player>", player.getName()));
 
-				e.getPlayer().setHealth(0D);
-
-			}
+			WaitingAPI.playersWaitingList.remove(player);
 
 		}
 

@@ -8,6 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import cn.plixe.waitbeforerespawn.waiting.WaitingCommands;
 import cn.plixe.waitbeforerespawn.waiting.Events.WaitingChatEvent;
 import cn.plixe.waitbeforerespawn.waiting.Events.WaitingCommandsEvent;
+import cn.plixe.waitbeforerespawn.waiting.Events.WaitingJoinEvent;
 import cn.plixe.waitbeforerespawn.waiting.Events.WaitingMoveEvent;
 import cn.plixe.waitbeforerespawn.waiting.Events.WaitingQuitEvent;
 import cn.plixe.waitbeforerespawn.waiting.Events.WaitingRespawnEvent;
@@ -35,6 +36,7 @@ public class Main extends JavaPlugin {
 		pm.registerEvents(new WaitingCommandsEvent(), instance);
 		pm.registerEvents(new WaitingChatEvent(), instance);
 		pm.registerEvents(new WaitingQuitEvent(), instance);
+		pm.registerEvents(new WaitingJoinEvent(), instance);
 
 	}
 

@@ -2,7 +2,7 @@ main: cn.plixe.waitbeforerespawn.Main
 name: WaitBeforeRespawn
 author: Plixe
 api-version: 1.13
-version: 1.0
+version: 1.1
 
 permissions:
    wbr.admin:
@@ -12,6 +12,15 @@ permissions:
          - wbr.bypass
          - wbr.help
          - wbr.reload
+         - wbr.tproom
+         - wbr.setroom
+   wbr.mod:
+      default: false
+      description: Waiting-room permissions.
+      children:
+         - wbr.help
+         - wbr.tproom
+         - wbr.setroom
    wbr.bypass:
       default: false
       description: Bypass waiting time.
@@ -21,6 +30,12 @@ permissions:
    wbr.reload:
       default: op
       description: Allow to reload configurations files.
+   wbr.tproom:
+      default: op
+      description: Allow player to teleport at the waiting-room.
+   wbr.setroom:
+      default: op
+      description: Allow player to set the waiting-room location.
       
 commands:
    wbr:

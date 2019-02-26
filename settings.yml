@@ -1,19 +1,29 @@
 global-settings:
 
+   # Enable it if you're running a cracked server.
+   crack-version: false
+
    # Waiting time in seconds.
    waiting-time: 10
-
-   # Enable a waiting room.
-   waiting-room: false
    
    # Player can send messages while waiting to respawn. 
    player-chat: true
 
-   # Player die if they quit the server while waiting to respawn.
-   anti-disconnection: true
-
    # If enable, players can't move their views while waiting to respawn.   
    hardcore-hold: false
+
+waiting-room:
+
+   # Enable a waiting room.
+   enable: false
+
+   # Player can move in waiting room.
+   player-moves: false
+
+anti-unlogin:
+   
+   # If player on waiting time quit, cooldown begin again.
+   reset-on-quit: false
 
 messages-settings:
 
@@ -32,7 +42,7 @@ messages-settings:
    title-message: false
    
    # Message showed after waiting
-   after-messages:
+   after-message:
       enable: true
       
       chat-message:
@@ -64,8 +74,3 @@ sounds-settings:
    # last version sounds name : https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
    # If you found some sound list tell me in PM !
    name: BLOCK_STONE_BUTTON_CLICK_ON
-
-waiting-room:
-
-    # Player can move in waiting room.
-    player-moves: false

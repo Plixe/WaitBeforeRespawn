@@ -22,9 +22,6 @@ public class WaitingAPI {
 
 		} else {
 
-			Utils.sendColoredMessage(Bukkit.getConsoleSender(),
-					ConfigFiles.msgConf.getString("global-messages.waiting-room-messages.undefined-room"));
-
 			return false;
 
 		}
@@ -69,6 +66,20 @@ public class WaitingAPI {
 			Location loc = new Location(world, x, y, z, yaw, pitch);
 
 			player.teleport(loc);
+
+		}
+
+	}
+
+	public static String playerPath(Player player) {
+
+		if (ConfigFiles.settingsConf.getBoolean("global-settings.crack-version")) {
+
+			return player.getName();
+
+		} else {
+
+			return player.getUniqueId().toString();
 
 		}
 

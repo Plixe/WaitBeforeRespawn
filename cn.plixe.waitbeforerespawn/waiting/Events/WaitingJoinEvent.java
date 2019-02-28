@@ -1,8 +1,7 @@
 package cn.plixe.waitbeforerespawn.waiting.Events;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,24 +16,6 @@ import cn.plixe.waitbeforerespawn.Utils;
 import cn.plixe.waitbeforerespawn.waiting.WaitingAPI;
 
 public class WaitingJoinEvent implements Listener {
-
-	static Location getRespawnLocation(Player player) {
-
-		World world = Bukkit.getServer().getWorld(
-				ConfigFiles.wSavesConf.getString("saves." + WaitingAPI.playerPath(player) + ".respawn-location.world"));
-		Double x = ConfigFiles.wSavesConf.getDouble("saves." + WaitingAPI.playerPath(player) + ".respawn-location.x");
-		Double y = ConfigFiles.wSavesConf.getDouble("saves." + WaitingAPI.playerPath(player) + ".respawn-location.y");
-		Double z = ConfigFiles.wSavesConf.getDouble("saves." + WaitingAPI.playerPath(player) + ".respawn-location.z");
-		Float yaw = (float) ConfigFiles.wSavesConf
-				.getInt("saves." + WaitingAPI.playerPath(player) + ".respawn-location.yaw");
-		Float pitch = (float) ConfigFiles.wSavesConf
-				.getInt("saves." + WaitingAPI.playerPath(player) + ".respawn-location.pitch");
-
-		Location location = new Location(world, x, y, z, yaw, pitch);
-
-		return location;
-
-	}
 
 	@EventHandler
 	public void onWaitingJoin(PlayerJoinEvent e) {
@@ -57,11 +38,15 @@ public class WaitingJoinEvent implements Listener {
 
 				count = ConfigFiles.settingsConf.getInt("global-settings.waiting-time");
 
+				Utils.sendColoredMessage(player, ConfigFiles.msgConf.getString("waiting-messages.reset-on-quit"));
+
 			} else {
 
 				count = ConfigFiles.wSavesConf.getInt("saves." + WaitingAPI.playerPath(player) + ".remaining-time");
 
 			}
+
+			/* WAITER */
 
 			BukkitTask countdownTask = new BukkitRunnable() {
 
@@ -73,23 +58,39 @@ public class WaitingJoinEvent implements Listener {
 
 					if (player.isOnline()) {
 
-						if (ConfigFiles.settingsConf.getBoolean("waiting-room.enable")) {
+						if (oneTime == 1) {
+							if (ConfigFiles.settingsConf.getBoolean("spectator-mode.enable")
+									&& !Utils.getVersion().contains("1.7")
+									&& ConfigFiles.settingsConf.getBoolean("spectator-mode.continue-on-join")) {
 
-							if (WaitingAPI.waitingRoomDefined()) {
+								player.teleport(player.getLocation());
 
-								if (oneTime == 1) {
+							} else if (ConfigFiles.settingsConf.getBoolean("waiting-room.enable")) {
+
+								player.setGameMode(GameMode.valueOf(ConfigFiles.wSavesConf
+										.getString("saves." + WaitingAPI.playerPath(player) + ".gamemode")));
+
+								if (WaitingAPI.waitingRoomDefined()) {
 
 									WaitingAPI.teleportToWaitingRoom(player);
-									oneTime--;
+
+								} else {
+
+									Utils.sendColoredMessage(Bukkit.getConsoleSender(),
+											"&cYou need to define waiting-room location ! Use /wbr setroom");
 
 								}
 
 							} else {
 
-								Utils.sendColoredMessage(Bukkit.getConsoleSender(),
-										ConfigFiles.msgConf.getString("waiting-room-messages.undefined-room"));
+								player.setGameMode(GameMode.valueOf(ConfigFiles.wSavesConf
+										.getString("saves." + WaitingAPI.playerPath(player) + ".gamemode")));
+
+								player.teleport(WaitingAPI.getRespawnLocation(player));
 
 							}
+
+							oneTime--;
 
 						}
 
@@ -97,24 +98,23 @@ public class WaitingJoinEvent implements Listener {
 
 							if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.enable")) {
 
-								WaitingRespawnEvent.sendAfterNotifications(player);
+								WaitingAPI.sendAfterNotifications(player);
 
 							}
 
-							player.teleport(getRespawnLocation(player));
+							player.teleport(WaitingAPI.getRespawnLocation(player));
 
-							if (player.isOnline()) {
+							player.setGameMode(GameMode.valueOf(ConfigFiles.wSavesConf
+									.getString("saves." + WaitingAPI.playerPath(player) + ".gamemode")));
 
-								WaitingAPI.playersWaitingList.remove(player);
+							WaitingAPI.playersWaitingList.remove(player);
 
-								ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player), null);
-								ConfigFiles.saveWaitingSavesFile();
+							ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player), null);
+							ConfigFiles.saveWaitingSavesFile();
 
-								for (PotionEffect effect : player.getActivePotionEffects()) {
+							for (PotionEffect effect : player.getActivePotionEffects()) {
 
-									player.removePotionEffect(effect.getType());
-
-								}
+								player.removePotionEffect(effect.getType());
 
 							}
 
@@ -122,7 +122,7 @@ public class WaitingJoinEvent implements Listener {
 
 						} else {
 
-							WaitingRespawnEvent.sendWaitingNotifications(player, counter);
+							WaitingAPI.sendWaitingNotifications(player, counter);
 
 							ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player) + ".remaining-time",
 									counter);
@@ -145,6 +145,37 @@ public class WaitingJoinEvent implements Listener {
 				}
 
 			}.runTaskTimer(Main.instance, 20, 20);
+
+		}
+
+	}
+
+	@EventHandler
+	public void onPlayerJoin(final PlayerJoinEvent e) {
+
+		if (ConfigFiles.settingsConf.getBoolean("form-message")) {
+
+			if (e.getPlayer().hasPermission("wbr.reload")) {
+
+				BukkitTask countdownTask = new BukkitRunnable() {
+
+					public void run() {
+
+						Utils.sendColoredMessage(e.getPlayer(), "");
+						Utils.sendColoredMessage(e.getPlayer(),
+								"&a&l[WaitBeforeRespawn] : &aHelp me to make this plugin better with this form https://goo.gl/forms/ut7kLgNylNb2AjlA2");
+						Utils.sendColoredMessage(e.getPlayer(),
+								"&eOnly admin can see this message. Disable it on settings.yml file. (see last line)");
+						Utils.sendColoredMessage(e.getPlayer(), "&eSorry for the trouble - Plixe.");
+						Utils.sendColoredMessage(e.getPlayer(), "");
+
+						cancel();
+
+					}
+
+				}.runTaskTimer(Main.instance, 20 * 10, 20);
+
+			}
 
 		}
 

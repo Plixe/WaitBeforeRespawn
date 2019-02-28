@@ -1,7 +1,7 @@
 package cn.plixe.waitbeforerespawn.waiting.Events;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Sound;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -18,83 +18,6 @@ import cn.plixe.waitbeforerespawn.waiting.WaitingAPI;
 
 public class WaitingRespawnEvent implements Listener {
 
-	static void sendAfterNotifications(Player player) {
-
-		if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.chat-message.enable")) {
-
-			if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.chat-message.space")) {
-
-				player.sendMessage("");
-				Utils.sendColoredMessage(player, ConfigFiles.msgConf.getString("waiting-messages.after"));
-				player.sendMessage("");
-
-			} else {
-
-				Utils.sendColoredMessage(player, ConfigFiles.msgConf.getString("waiting-messages.after"));
-
-			}
-
-		}
-
-		if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.bar-message")) {
-
-			Utils.sendActionBar(player, ConfigFiles.msgConf.getString("waiting-messages.after"));
-
-		}
-
-		if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.title-message")) {
-
-			Utils.sendTitle(player, "", ConfigFiles.msgConf.getString("waiting-messages.after"));
-
-		}
-
-	}
-
-	static void sendWaitingNotifications(Player player, int counter) {
-
-		if (ConfigFiles.settingsConf.getBoolean("messages-settings.chat-message.enable")) {
-
-			if (ConfigFiles.settingsConf.getBoolean("messages-settings.chat-message.space")) {
-
-				player.sendMessage("");
-				Utils.sendColoredMessage(player,
-						ConfigFiles.msgConf.getString("waiting-messages.countdown").replace("<seconds>", "" + counter));
-				player.sendMessage("");
-
-			} else {
-
-				Utils.sendColoredMessage(player,
-						ConfigFiles.msgConf.getString("waiting-messages.countdown").replace("<seconds>", "" + counter));
-
-			}
-
-		}
-
-		if (ConfigFiles.settingsConf.getBoolean("messages-settings.bar-message")) {
-
-			Utils.sendActionBar(player,
-					ConfigFiles.msgConf.getString("waiting-messages.countdown").replace("<seconds>", "" + counter));
-
-		}
-
-		if (ConfigFiles.settingsConf.getBoolean("messages-settings.title-message")) {
-
-			Utils.sendTitle(player,
-					ConfigFiles.msgConf.getString("waiting-messages.title.top").replace("<seconds>", "" + counter),
-					ConfigFiles.msgConf.getString("waiting-messages.title.subtitle").replace("<seconds>",
-							"" + counter));
-
-		}
-
-		if (ConfigFiles.settingsConf.getBoolean("sounds-settings.enable")) {
-
-			player.playSound(player.getLocation(),
-					Sound.valueOf(ConfigFiles.settingsConf.getString("sounds-settings.name")), 1, 1);
-
-		}
-
-	}
-
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerRespawn(final PlayerRespawnEvent e) {
 
@@ -110,13 +33,6 @@ public class WaitingRespawnEvent implements Listener {
 
 			WaitingAPI.playersWaitingList.add(player);
 
-			if (ConfigFiles.settingsConf.getBoolean("waiting-room.enable") && (!WaitingAPI.waitingRoomDefined())) {
-
-				Utils.sendColoredMessage(Bukkit.getConsoleSender(),
-						"&cYou need to define waiting-room location ! Use /wbr setroom");
-
-			}
-
 			/* WAITER */
 
 			BukkitTask countdownTask = new BukkitRunnable() {
@@ -129,18 +45,34 @@ public class WaitingRespawnEvent implements Listener {
 
 					if (player.isOnline()) {
 
-						if (ConfigFiles.settingsConf.getBoolean("waiting-room.enable")) {
+						if (oneTime == 1) {
 
-							if (WaitingAPI.waitingRoomDefined()) {
+							if (ConfigFiles.settingsConf.getBoolean("spectator-mode.enable")
+									&& !Utils.getVersion().contains("1.7")) {
 
-								if (oneTime == 1) {
+								player.teleport(WaitingAPI.getDeathLocation(player));
+								player.setGameMode(GameMode.valueOf("SPECTATOR"));
+
+							} else if (ConfigFiles.settingsConf.getBoolean("waiting-room.enable")) {
+
+								if (WaitingAPI.waitingRoomDefined()) {
 
 									WaitingAPI.teleportToWaitingRoom(player);
-									oneTime--;
+
+								} else {
+
+									Utils.sendColoredMessage(Bukkit.getConsoleSender(),
+											"&cYou need to define waiting-room location ! Use /wbr setroom");
 
 								}
 
+							} else {
+
+								player.teleport(e.getRespawnLocation());
+
 							}
+
+							oneTime--;
 
 						}
 
@@ -148,24 +80,23 @@ public class WaitingRespawnEvent implements Listener {
 
 							if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.enable")) {
 
-								sendAfterNotifications(player);
+								WaitingAPI.sendAfterNotifications(player);
 
 							}
 
 							player.teleport(e.getRespawnLocation());
 
-							if (player.isOnline()) {
+							WaitingAPI.playersWaitingList.remove(player);
 
-								WaitingAPI.playersWaitingList.remove(player);
+							player.setGameMode(GameMode.valueOf(ConfigFiles.wSavesConf
+									.getString("saves." + WaitingAPI.playerPath(player) + ".gamemode")));
 
-								ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player), null);
-								ConfigFiles.saveWaitingSavesFile();
+							ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player), null);
+							ConfigFiles.saveWaitingSavesFile();
 
-								for (PotionEffect effect : player.getActivePotionEffects()) {
+							for (PotionEffect effect : player.getActivePotionEffects()) {
 
-									player.removePotionEffect(effect.getType());
-
-								}
+								player.removePotionEffect(effect.getType());
 
 							}
 
@@ -173,7 +104,7 @@ public class WaitingRespawnEvent implements Listener {
 
 						} else {
 
-							sendWaitingNotifications(player, counter);
+							WaitingAPI.sendWaitingNotifications(player, counter);
 
 							counter--;
 
@@ -196,6 +127,8 @@ public class WaitingRespawnEvent implements Listener {
 						ConfigFiles.wSavesConf.set("saves." + WaitingAPI.playerPath(player) + ".remaining-time",
 								counter);
 						ConfigFiles.saveWaitingSavesFile();
+
+						player.setGameMode(GameMode.valueOf("SURVIVAL"));
 
 						cancel();
 

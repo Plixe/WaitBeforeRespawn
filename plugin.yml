@@ -2,7 +2,7 @@ main: cn.plixe.waitbeforerespawn.Main
 name: WaitBeforeRespawn
 author: Plixe
 api-version: 1.13
-version: 1.1
+version: 1.2
 
 permissions:
    wbr.admin:

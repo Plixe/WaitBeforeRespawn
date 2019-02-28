@@ -11,6 +11,12 @@ global-settings:
 
    # If enable, players can't move their views while waiting to respawn.   
    hardcore-hold: false
+   
+   # If enable, players can break blocks while waiting to respawn.
+   break-blocks: false
+   
+   # If enable, players can break blocks while waiting to respawn.
+   place-blocks: false
 
 waiting-room:
 
@@ -24,6 +30,21 @@ anti-unlogin:
    
    # If player on waiting time quit, cooldown begin again.
    reset-on-quit: false
+
+spectator-mode:
+   
+   # If enable, player wait in the death place in spectator mode.
+   enable: false
+   
+   # If enable and player quit the game during waiting time, when he come back waiting time continue to his death place.
+   # Else he is teleported to his respawn location (or waiting room if enabled) to finish the countdown.
+   continue-on-join: false
+   
+   # If enable, players can trough blocks in spectator mode.
+   through-blocks: true
+   
+   # If enable, players can teleport themself to other player with spectator menu.
+   player-teleportation: true
 
 messages-settings:
 
@@ -74,3 +95,7 @@ sounds-settings:
    # last version sounds name : https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Sound.html
    # If you found some sound list tell me in PM !
    name: BLOCK_STONE_BUTTON_CLICK_ON
+
+# Help me to make this plugin better with this form : https://goo.gl/forms/lStfisTNrWbAoz0o1
+# Only the console and the admin can see this message. To disable it set on "false"
+form-message: true

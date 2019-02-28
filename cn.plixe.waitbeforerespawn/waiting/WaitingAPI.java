@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -80,6 +81,119 @@ public class WaitingAPI {
 		} else {
 
 			return player.getUniqueId().toString();
+
+		}
+
+	}
+
+	public static Location getRespawnLocation(Player player) {
+
+		World world = Bukkit.getServer().getWorld(
+				ConfigFiles.wSavesConf.getString("saves." + WaitingAPI.playerPath(player) + ".respawn-location.world"));
+		Double x = ConfigFiles.wSavesConf.getDouble("saves." + WaitingAPI.playerPath(player) + ".respawn-location.x");
+		Double y = ConfigFiles.wSavesConf.getDouble("saves." + WaitingAPI.playerPath(player) + ".respawn-location.y");
+		Double z = ConfigFiles.wSavesConf.getDouble("saves." + WaitingAPI.playerPath(player) + ".respawn-location.z");
+		Float yaw = (float) ConfigFiles.wSavesConf
+				.getInt("saves." + WaitingAPI.playerPath(player) + ".respawn-location.yaw");
+		Float pitch = (float) ConfigFiles.wSavesConf
+				.getInt("saves." + WaitingAPI.playerPath(player) + ".respawn-location.pitch");
+
+		Location location = new Location(world, x, y, z, yaw, pitch);
+
+		return location;
+
+	}
+
+	public static Location getDeathLocation(Player player) {
+
+		World world = Bukkit.getServer().getWorld(
+				ConfigFiles.wSavesConf.getString("saves." + WaitingAPI.playerPath(player) + ".death-location.world"));
+		Double x = ConfigFiles.wSavesConf.getDouble("saves." + WaitingAPI.playerPath(player) + ".death-location.x");
+		Double y = ConfigFiles.wSavesConf.getDouble("saves." + WaitingAPI.playerPath(player) + ".death-location.y");
+		Double z = ConfigFiles.wSavesConf.getDouble("saves." + WaitingAPI.playerPath(player) + ".death-location.z");
+		Float yaw = (float) ConfigFiles.wSavesConf
+				.getInt("saves." + WaitingAPI.playerPath(player) + ".death-location.yaw");
+		Float pitch = (float) ConfigFiles.wSavesConf
+				.getInt("saves." + WaitingAPI.playerPath(player) + ".death-location.pitch");
+
+		Location location = new Location(world, x, y, z, yaw, pitch);
+
+		return location;
+
+	}
+	
+	public static void sendAfterNotifications(Player player) {
+
+		if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.chat-message.enable")) {
+
+			if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.chat-message.space")) {
+
+				player.sendMessage("");
+				Utils.sendColoredMessage(player, ConfigFiles.msgConf.getString("waiting-messages.after"));
+				player.sendMessage("");
+
+			} else {
+
+				Utils.sendColoredMessage(player, ConfigFiles.msgConf.getString("waiting-messages.after"));
+
+			}
+
+		}
+
+		if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.bar-message")) {
+
+			Utils.sendActionBar(player, ConfigFiles.msgConf.getString("waiting-messages.after"));
+
+		}
+
+		if (ConfigFiles.settingsConf.getBoolean("messages-settings.after-message.title-message")) {
+
+			Utils.sendTitle(player, "", ConfigFiles.msgConf.getString("waiting-messages.after"));
+
+		}
+
+	}
+
+	public static void sendWaitingNotifications(Player player, int counter) {
+
+		if (ConfigFiles.settingsConf.getBoolean("messages-settings.chat-message.enable")) {
+
+			if (ConfigFiles.settingsConf.getBoolean("messages-settings.chat-message.space")) {
+
+				player.sendMessage("");
+				Utils.sendColoredMessage(player,
+						ConfigFiles.msgConf.getString("waiting-messages.countdown").replace("<seconds>", "" + counter));
+				player.sendMessage("");
+
+			} else {
+
+				Utils.sendColoredMessage(player,
+						ConfigFiles.msgConf.getString("waiting-messages.countdown").replace("<seconds>", "" + counter));
+
+			}
+
+		}
+
+		if (ConfigFiles.settingsConf.getBoolean("messages-settings.bar-message")) {
+
+			Utils.sendActionBar(player,
+					ConfigFiles.msgConf.getString("waiting-messages.countdown").replace("<seconds>", "" + counter));
+
+		}
+
+		if (ConfigFiles.settingsConf.getBoolean("messages-settings.title-message")) {
+
+			Utils.sendTitle(player,
+					ConfigFiles.msgConf.getString("waiting-messages.title.top").replace("<seconds>", "" + counter),
+					ConfigFiles.msgConf.getString("waiting-messages.title.subtitle").replace("<seconds>",
+							"" + counter));
+
+		}
+
+		if (ConfigFiles.settingsConf.getBoolean("sounds-settings.enable")) {
+
+			player.playSound(player.getLocation(),
+					Sound.valueOf(ConfigFiles.settingsConf.getString("sounds-settings.name")), 1, 1);
 
 		}
 
